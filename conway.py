@@ -2,19 +2,52 @@ import pygame
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+RED = (200, 0, 0)
 
 # 5px squares
-width = 10
-height = 10
+width = 5
+height = 5
 
 #1px margin
 margin = 1
 
-#50x50 square matrix
-rows = 50
-screen_width = rows * (width + margin) + 2 * margin
-screen_height = screen_width
+#90x90 square matrix
+rows = 90
 
+#button height
+btn_height = 50
+
+screen_width = rows * (width + margin) + 2 * margin 
+screen_height = screen_width + btn_height
+
+btn_width = screen_width // 3
+
+start_build = False
+
+class button:
+    def __init__(self, x, y, width, height, title):
+        self.height = height
+        self.width = width
+        self.title = title
+        self.x = x
+        self.y = y
+
+
+    def isOver(self, pos):
+        if ((pos[0] > self.x and pos[0] < self.x + self.width) and (pos[1] > self.y and pos[1] < self.y + self.height)):
+            return True
+        else:
+            return False
+
+    def draw(self, screen, color):
+        pygame.draw.rect(screen, color, (self.x, self.y, self.width, self.height))
+        if self.title != '':
+            font = pygame.font.SysFont('arial', 20)
+            title = font.render(self.title, 1, (0,0,0))
+            screen.blit(title, (self.x + int(self.width/2 - title.get_width()/2), self.y + int(self.height/2 - title.get_height()/2)))
+
+
+        
 
 grid = []
 for row in range(rows):
@@ -56,51 +89,16 @@ def generate(grid):
 
  
 
+start_button = button(0, screen_width, btn_width, btn_height, "start")
+clear_button = button(btn_width + margin, screen_width, btn_width, btn_height, "clear")
+upload_button = button((btn_width + margin) * 2, screen_width, btn_width, btn_height, "upload")
 
 
+def update_grid(grid, start_build):
 
-mouse_drag = False
-drag_start_point = False
-drag_end_point = False
- 
-# Initialize pygame
-pygame.init()
- 
-# Set the HEIGHT and WIDTH of the screen
-
-screen = pygame.display.set_mode((screen_width, screen_height))
- 
-# Set title of screen
-pygame.display.set_caption("Conway")
- 
-# Loop until the user clicks the close button.
-done = False
- 
-# Used to manage how fast the screen updates
-clock = pygame.time.Clock()
- 
-# -------- Main Program Loop -----------
-while not done:
-    for event in pygame.event.get():  # User did something
-        if event.type == pygame.QUIT:  # If user clicked close
-            done = True  # Flag that we are done so we exit this loop
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            # User clicks the mouse. Get the position
-            pos = pygame.mouse.get_pos()
-            # Change the x/y screen coordinates to grid coordinates
-            column = pos[0] // (width + margin)
-            row = pos[1] // (height + margin)
-            # Set that location to one
-            grid[row][column] = 1
-            print("Click ", pos, "Grid coordinates: ", row, column)
-
-    
-    # Set the screen background
-    screen.fill(BLACK)
-
-    def update_grid():
+        if start_build  == True:
+            grid = generate(grid)
         # Draw the grid
-
         for row in range(rows):
                 for column in range(rows):
                     color = WHITE
@@ -116,15 +114,70 @@ while not done:
                         height
                         ]
                         )
-    
-    update_grid()
 
-    grid = generate(grid)
+        start_button.draw(screen, WHITE)
+        clear_button.draw(screen, WHITE)
+        upload_button.draw(screen, WHITE)
+
+
+
+ 
+# Initialize pygame
+pygame.init()
+ 
+# Set the HEIGHT and WIDTH of the screen
+
+screen = pygame.display.set_mode((screen_width, screen_height))
+ 
+# Set title of screen
+pygame.display.set_caption("Conway")
+ 
+# Loop until the user clicks the close button.
+done = False
+is_updating = False
+# Used to manage how fast the screen updates
+clock = pygame.time.Clock()
+ 
+# -------- Main Program Loop -----------
+while not done:
+
+    for event in pygame.event.get():  # User did something
+
+        if event.type == pygame.QUIT:  # If user clicked close
+            done = True  # Flag that we are done so we exit this loop
+
+        
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            # User clicks the mouse. Get the position
+            pos = pygame.mouse.get_pos()
+            if (pos[1] <= screen_width-1):
+                # Change the x/y screen coordinates to grid coordinates
+                column = pos[0] // (width + margin)
+                row = pos[1] // (height + margin)
+                # Set that location to one
+           
+                grid[row][column] = 1
+
+                print("Click ", pos, "Grid coordinates: ", row, column)
+
+            elif (start_button.isOver(pos)):   
+                start_build = True
+
+    
+    # Set the screen background
+    screen.fill(BLACK)
+
+
+    update_grid(grid, start_build)
+
+    # grid = generate(grid)
+
     # Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
+    clock.tick(10)
 
     # Limit to 60 frames per second
-    clock.tick(10)
+
  
     
  
