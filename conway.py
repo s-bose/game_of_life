@@ -170,14 +170,22 @@ while not done:
                 row = pos[1] // (height + margin)
                 # Set that location to one
            
-                main_grid[row][column] = 1
+                main_grid[row][column] = 1 if main_grid[row][column] == 0 else 0
 
                 print("Click ", pos, "Grid coordinates: ", row, column)
 
             elif (start_button.isOver(pos)):   
-                start_build = True
+                start_build = not start_build
+                start_button.title = "stop" if start_button.title == "start" else "start" 
 
-    
+            elif (clear_button.isOver(pos)):
+                main_grid = create_grid(rows)
+                start_build = False
+                start_button.title = "start"
+                
+            elif (upload_button.isOver(pos)):
+                # this part is gonna be a pain in the ass
+                pass  
     # Set the screen background
     screen.fill(BLACK)
 
