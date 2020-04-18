@@ -1,4 +1,10 @@
 import pygame
+import numpy as np
+import tkinter as tk
+from tkinter import filedialog
+from PIL import Image, ImageOps
+from PIL import ImageEnhance
+
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -12,7 +18,7 @@ height = 5
 margin = 1
 
 #90x90 square matrix
-rows = 90
+rows = 100
 
 #button height
 btn_height = 50
@@ -180,12 +186,39 @@ while not done:
 
             elif (clear_button.isOver(pos)):
                 main_grid = create_grid(rows)
+
                 start_build = False
                 start_button.title = "start"
                 
             elif (upload_button.isOver(pos)):
                 # this part is gonna be a pain in the ass
-                pass  
+
+                root = tk.Tk()
+                root.withdraw()
+                root.attributes("-topmost", True)
+                file_path = filedialog.askopenfilename(parent = root)
+                if file_path:
+
+                    img = Image.open(file_path)
+                    
+                    ######################################################################################################
+                    # Kudos to this guy for the simple tutorial on converting images to pixel grid                       #
+                    #                                                                                                    #                         
+                    # https://linux.ime.usp.br/~robotenique//computer%20science/python/2017/09/17/image-grid-python.html #
+                    ######################################################################################################
+                    
+                    size = (rows, rows)
+
+                    img = ImageOps.fit(img, size, Image.ANTIALIAS)
+                    img = ImageEnhance.Contrast(img).enhance(2.0).convert('1')
+                    pixel_arr = np.asarray(img)
+                    
+                    print(pixel_arr.shape)
+                    for i in range(rows):
+                        for j in range(rows):
+                            main_grid[i][j] = not pixel_arr[i][j]
+                else:
+                    pass
     # Set the screen background
     screen.fill(BLACK)
 
@@ -194,7 +227,7 @@ while not done:
 
     # Go ahead and update the screen with what we've drawn.
     pygame.display.update()
-    clock.tick(5)
+    clock.tick()
 
     # Limit to 60 frames per second
 
